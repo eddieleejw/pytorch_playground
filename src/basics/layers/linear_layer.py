@@ -1,15 +1,21 @@
-import numpy as np
 import torch
-import torch.nn as nn
+from module.module import module
 
-class linear_layer():
+class linear_layer(module):
 
-    def __init__(self, input_dim, output_dim, lr = 0.001):
-        self.weights = torch.randn(input_dim, output_dim)
-        self.bias = torch.randn(1, output_dim)
+    def log(self, msg):
+        if self.debug:
+            print(msg)
+
+    def __init__(self, input_dim, output_dim, lr = 0.001, debug = True):
+        super().__init__()
+        self.weights = torch.randn(input_dim, output_dim) * (1. / input_dim**0.5)
+        self.bias = torch.zeros(1, output_dim)
         self.weights_grad = None
         self.bias_grad = None
-        self.lr = 0.001
+        self.lr = lr
+        self.debug = debug
+        self.parameters = [self.weights, self.bias]
 
     def forward(self, X):
         '''
@@ -47,6 +53,13 @@ class linear_layer():
     def step(self):
         self.weights -= self.lr * self.weights_grad
         self.bias -= self.lr * self.bias_grad
+    
+    def to(self, device):
+        new_weights = self.weights.to(device)
+        new_bias = self.bias.to(device)
+        self.weights = new_weights
+        self.bias = new_bias
+        self.parameters = [self.weights, self.bias]
 
 
 
