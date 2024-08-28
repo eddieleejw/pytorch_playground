@@ -1,8 +1,10 @@
 from layers.linear_layer import linear_layer
 from activations.relu import relu
+from activations.sigmoid import sigmoid
 from models.base_model import base_model
 from losses.l2_loss import l2_loss
 from matplotlib import pyplot as plt
+from layers.softmax import softmax
 import torch
 import tqdm
 
