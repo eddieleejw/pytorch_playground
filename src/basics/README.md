@@ -1,6 +1,11 @@
 # Basics
 
-This folder will be focused on coding various components of neural net architectures from scratch.
+This folder will be focused on coding various components of neural net architectures from scratch. This inclues:
+
+- Forward passes through layers/activations/losses/etc
+- Backward passes through layers/activations/losses/etc by backpropagation
+- Moving models to a device
+- Optimization step
 
 # Directory structure
 
