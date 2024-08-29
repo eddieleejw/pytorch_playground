@@ -16,7 +16,7 @@ class CrossEntropyLoss(module):
 
 
     def __init__(self):
-        super.__init__()
+        super().__init__()
         self.softmax = softmax()
 
     def forward(self, scores, y):
@@ -41,10 +41,14 @@ class CrossEntropyLoss(module):
 
         # sum each row together so that there is only one column left
         output = torch.sum(output, dim = 1)
+
+        output = torch.sum(output).item()
+
+        output = output/scores.shape[0]
         
         return output
 
-    def backward(self, grad_output):
+    def backward(self):
         '''
         we want to compute dL/dyhat
             which should be a matrix of shape n x C

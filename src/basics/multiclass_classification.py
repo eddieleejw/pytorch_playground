@@ -3,6 +3,7 @@ Demo for multiclass classification, using cross entropy loss
 '''
 
 from layers.linear_layer import linear_layer
+from layers.softmax import softmax
 from activations.relu import relu
 from activations.sigmoid import sigmoid
 from models.base_model import base_model
@@ -32,29 +33,39 @@ def create_data(n, input_dim, device):
         elif row < 4:
             y[i][2] = 1
         else:
-            y[1][3] = 1
+            y[i][3] = 1
 
     y = y.to(device)
 
     return X, y 
 
 
-def training_loop(X, y, model, loss, epochs):
+def training_loop(X, y, model, loss, epochs, debug = False):
 
     losses = []
+
+    if debug:
+        weights_tracking = []
 
     for i in tqdm.tqdm(range(epochs)):
 
         output = model.forward(X)
 
-        losses.append(loss.forward(output, y).cpu())
+        losses.append(loss.forward(output, y))
 
         grad_output = loss.backward()
 
         model.backward(grad_output)
 
         model.step()
-    
+
+        if debug:
+            weights_tracking.append(torch.max(model.layers[0].weights).item())
+            
+    if debug:
+        plot_loss(weights_tracking)
+        pass
+
     return losses
 
 
@@ -65,16 +76,18 @@ def plot_loss(losses):
 
 if __name__ == "__main__":
 
+    DEBUG = False
+
     # 0. speciy device
     device = torch.device('cuda:0')
 
     # 1. define model
     layers = [
-        linear_layer(5, 5, lr = 0.00001),
+        linear_layer(5, 5, lr = 0.00001, clip_gradient=False),
         relu(),
-        linear_layer(5, 5, lr = 0.00001),
+        linear_layer(5, 5, lr = 0.00001, clip_gradient=False),
         relu(),
-        linear_layer(5, 3, lr = 0.00001)
+        linear_layer(5, 4, lr = 0.00001, clip_gradient=False)
     ]
 
     model = create_model(
@@ -84,7 +97,7 @@ if __name__ == "__main__":
 
     # 2. define loss
 
-    loss = l2_loss()
+    loss = CrossEntropyLoss()
 
     # 3. create/load data
 
@@ -92,7 +105,7 @@ if __name__ == "__main__":
 
     # 4. training loop
 
-    losses = training_loop(X, y, model, loss, epochs = 10000)
+    losses = training_loop(X, y, model, loss, epochs = 10000, debug = DEBUG)
     
     # 5. plot
     plot_loss(losses)
@@ -104,4 +117,4 @@ if __name__ == "__main__":
     output_test = model.forward(X_test)
 
     print(y_test)
-    print(output_test)
+    print(softmax().forward(output_test))

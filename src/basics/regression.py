@@ -30,7 +30,7 @@ def training_loop(X, y, model, loss, epochs):
 
         output = model.forward(X)
 
-        losses.append(loss.forward(output, y).cpu())
+        losses.append(loss.forward(output, y))
 
         grad_output = loss.backward()
 
@@ -53,11 +53,11 @@ if __name__ == "__main__":
 
     # 1. define model
     layers = [
-        linear_layer(5, 5, lr = 0.00001),
+        linear_layer(5, 10, lr = 0.00001),
         relu(),
-        linear_layer(5, 5, lr = 0.00001),
+        linear_layer(10, 10, lr = 0.00001),
         relu(),
-        linear_layer(5, 1, lr = 0.00001)
+        linear_layer(10, 1, lr = 0.00001)
     ]
 
     model = create_model(
@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
     # 4. training loop
 
-    losses = training_loop(X, y, model, loss, epochs = 1000)
+    losses = training_loop(X, y, model, loss, epochs = 5000)
     
     # 5. plot
     plot_loss(losses)

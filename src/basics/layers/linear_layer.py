@@ -7,7 +7,7 @@ class linear_layer(module):
         if self.debug:
             print(msg)
 
-    def __init__(self, input_dim, output_dim, lr = 0.001, debug = True):
+    def __init__(self, input_dim, output_dim, lr = 0.001, debug = True, clip_gradient = False):
         super().__init__()
         self.weights = torch.randn(input_dim, output_dim) * (1. / input_dim**0.5)
         self.bias = torch.zeros(1, output_dim)
@@ -16,6 +16,7 @@ class linear_layer(module):
         self.lr = lr
         self.debug = debug
         self.parameters = [self.weights, self.bias]
+        self.clip_gradient = clip_gradient
 
     def forward(self, X):
         '''
@@ -42,17 +43,21 @@ class linear_layer(module):
 
         #dL/dW
         grad_weights = torch.matmul(self.X.T, grad_output)
-        self.weights_grad = grad_weights
+        self.weights_grad = torch.nan_to_num(grad_weights)
 
         #dL/db
         grad_bias = torch.sum(grad_output, dim = 0, keepdim=True)
-        self.bias_grad = grad_bias
+        self.bias_grad = torch.nan_to_num(grad_bias)
 
         return grad_input
 
     def step(self):
-        self.weights -= self.lr * self.weights_grad
-        self.bias -= self.lr * self.bias_grad
+        if self.clip_gradient:
+            self.weights -= self.lr * torch.clamp(self.weights_grad, -10, 10)
+            self.bias -= self.lr * torch.clamp(self.bias_grad, -10, 10)
+        else: 
+            self.weights -= self.lr * self.weights_grad
+            self.bias -= self.lr * self.bias_grad
     
     def to(self, device):
         new_weights = self.weights.to(device)

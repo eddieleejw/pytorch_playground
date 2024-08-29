@@ -24,7 +24,7 @@ class l2_loss(module):
         z = torch.sum(z)
         z = z / pred.shape[0]
 
-        return z
+        return z.item()
     
     def backward(self):
         '''

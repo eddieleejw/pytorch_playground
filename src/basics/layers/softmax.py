@@ -83,30 +83,62 @@ class softmax(module):
             
             Again, in our case, J is symmetric i.e. J^T = T
             So a = Jb, as above
+        
+        I implement a row-wise to showcase the math more clearly,
+        but also give a batched implementation to allow parallelisation
+            The batched implementation is more than 100x faster on my machine
         '''
-        
-        # initialise an empty (d x d) output matrix
-        grad_input = torch.zeros_like(grad_output)
+        PARALLEL = True
+        if not PARALLEL:
+            # example of how to do the calculaton row by row
 
-        # calculate each row of grad_input separately
+            # initialise an empty (d x d) output matrix
+            grad_input = torch.zeros_like(grad_output)
 
-        d = grad_output.shape[0]
+            # calculate each row of grad_input separately
 
-        for i in range(d):
-            f = self.out[i].unsqueeze(dim=1) # f(x)
-            g = grad_output[i].unsqueeze(dim=1)
+            d = grad_output.shape[0]
 
-            assert f.shape == torch.Size([5,1])
-            assert f.shape == g.shape
-        
-            # calculate jacobian
-            J = torch.diag(f.squeeze()) - torch.matmul(f, f.T)
+            for i in range(d):
+                f = self.out[i].unsqueeze(dim=1) # f(x)
+                g = grad_output[i].unsqueeze(dim=1)
+
+                assert f.shape == torch.Size([5,1])
+                assert f.shape == g.shape
+            
+                # calculate jacobian
+                J = torch.diag(f.squeeze()) - torch.matmul(f, f.T)
+
+                # calculate dL/dx
+                dx = torch.matmul(J, g)
+
+                # assign to grad_input
+                grad_input[i] = dx.squeeze()
+        else:
+            # doing the same thing but parallelising as batch operations
+
+            S = self.out # shape = (n, d)
+
+            S = S.unsqueeze(2) # shape = (n, d, 1)
+
+            S_T = S.transpose(1, 2) # shape = (n, 1, d)
+
+            # the following matmul will iterate through each batch (i.e. i in [n]), and do the multiplication S[i] x S_T[i], resulting in a d x d matrix for each batch, and then stacks them to make a tensor of shape (n, d, d) (i.e. n matrices of shape (d x d))
+            outer_product = torch.matmul(S, S_T) # shape = (n, d, d), where outer_product[i] is a matrix defined as S[i] x S[i]^T, where S[i] := f^(i) = f(x^(i)), i.e. the output vector correspoding to the ith input vector
+
+            # create the diagonal matrix
+            # self.out has shape (n, d). diag_embed will take each self.out[i] and turn them into (d, d) diagonal matrices where the diagonsl are self.out[i], and then stacks "n" of them to output shape (n, d, d) i.e. "n" diagonal matrices of shape (d, d)
+            diag_matrix = torch.diag_embed(self.out)
+
+            # do elementwise subtraction to get the batched Jacobian of size (n, d, d), where J[i] is the Jacobian of the i-th sample
+            J = diag_matrix - outer_product
 
             # calculate dL/dx
-            dx = torch.matmul(J, g)
+            # grad_output has shape (n, d). to make it broadcastable, we want to make it shape (n, d, 1) so that torch.matmul will calculate J[i] x dx[i]
+            dx = torch.matmul(J, grad_output.unsqueeze(dim = 2))
 
-            # assign to grad_input
-            grad_input[i] = dx.squeeze()
+            # dx has shape (n, d, 1), we want to turn it back to (n, d)
+            grad_input = dx.squeeze(dim = 2)
         
         return grad_input
 
