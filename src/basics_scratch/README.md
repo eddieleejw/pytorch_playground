@@ -1,4 +1,4 @@
-# Basics
+# Basics (Scratch)
 
 This folder will be focused on coding various components of neural net architectures from scratch. This inclues:
 
@@ -6,6 +6,8 @@ This folder will be focused on coding various components of neural net architect
 - Backward passes through layers/activations/losses/etc by backpropagation
 - Moving models to a device
 - Optimization step
+
+As opposed to "Basics (PyTorch)", I will also try to implement the backward steps, rather than relying on autograd.
 
 # Directory structure
 
