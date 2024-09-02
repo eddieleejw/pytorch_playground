@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
-from layers.linear_layer import linear_layer
+from .layers.linear_layer import linear_layer
+from .layers.softmax import softmax
 from tqdm import tqdm
 from matplotlib import pyplot as plt
 
@@ -25,9 +26,9 @@ class model(nn.Module):
         super().__init__()
         self.layer = nn.Sequential(
             linear_layer(5, 5),
-            nn.ReLU(),
+            softmax(),
             linear_layer(5, 5),
-            nn.ReLU(),
+            softmax(),
             linear_layer(5, 1)
         )
 
@@ -37,6 +38,8 @@ class model(nn.Module):
 
 
 if __name__ == "__main__":
+
+    torch.manual_seed(42)
 
     device = torch.device('cuda:0')
 
