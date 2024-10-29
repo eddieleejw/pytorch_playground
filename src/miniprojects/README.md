@@ -1,0 +1,1 @@
+For quick and easy projects that are designed to make you more familiar with using PyTorch for simple or standard problems.

@@ -11,14 +11,24 @@ class model(nn.Module):
 
     def __init__(self):
         super().__init__()
+        # self.convolution_layers = nn.Sequential(
+        #     convolution2d(3, 5, (3,3)),
+        #     relu(),
+        #     convolution2d(5, 5, (3,3)),
+        #     relu(),
+        #     convolution2d(5, 1, (3,3)),
+        #     relu()
+        # )
+
         self.convolution_layers = nn.Sequential(
-            convolution2d(3, 5, (3,3)),
+            nn.Conv2d(3, 5, (3,3)),
             relu(),
-            convolution2d(5, 5, (3,3)),
+            nn.Conv2d(5, 5, (3,3)),
             relu(),
-            convolution2d(5, 1, (3,3)),
+            nn.Conv2d(5, 1, (3,3)),
             relu()
         )
+
         self.linear_layer = linear_layer(14*14, 1)
 
     def forward(self, X):
