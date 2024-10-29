@@ -3,3 +3,4 @@ todo.md
 venv
 **/__pycache__
 relative_imports_ahh.txt
+src\miniprojects\mnist_digits\data
